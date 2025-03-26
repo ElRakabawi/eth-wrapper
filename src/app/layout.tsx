@@ -1,7 +1,10 @@
+import "./globals.css";
+import '@rainbow-me/rainbowkit/styles.css';
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import "./globals.css";
+import Web3Providers from "./components/Web3Providers";
 import Wrap from "./components/Wrap";
+import { ConnectButton } from "@rainbow-me/rainbowkit";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -27,7 +30,14 @@ export default function RootLayout() {
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <Wrap />
+        <Web3Providers>
+        <div className="flex flex-col h-screen bg-neutral-900">
+          <div className="flex justify-end bg-neutral-900 p-5">
+            <ConnectButton />
+          </div>
+          <Wrap />
+        </div>
+        </Web3Providers>
       </body>
     </html>
   );

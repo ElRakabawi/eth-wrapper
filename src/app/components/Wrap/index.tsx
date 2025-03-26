@@ -5,15 +5,19 @@ import { ASSETS } from "@/app/constants";
 import TokenInput from "../TokenInput";
 import Image from "next/image";
 import { Assets } from "@/app/types";
+import { useAccount } from 'wagmi';
+import { useConnectModal } from '@rainbow-me/rainbowkit';
 
 const Wrap: React.FC = () => {
   const { [Assets.ETH]: eth, [Assets.WETH]: weth } = ASSETS;
 
   const [amount, setAmount] = useState<string>('');
   const [isWrapping, setIsWrapping] = useState<boolean>(true);
+  const { isConnected } = useAccount();
+  const { openConnectModal } = useConnectModal();
 
   return (
-    <div className="flex justify-center items-center min-h-screen bg-neutral-900 p-5">
+    <div className="flex justify-center items-center h-full">
       <div className="bg-neutral-800 rounded-3xl p-6 w-full max-w-[480px] shadow-lg">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-neutral-50 text-lg font-semibold m-0">{isWrapping ? "Wrap ETH" : "Unwrap WETH"}</h2>
@@ -38,8 +42,12 @@ const Wrap: React.FC = () => {
           />
         </div>
 
-        <button className="w-full bg-blue-500 text-white border-none rounded-2xl py-3 text-md font-semibold mt-6 cursor-pointer hover:bg-blue-600 transition-colors">
-          {isWrapping ? "Wrap" : "Unwrap"}
+        <button className="w-full bg-blue-500 text-white border-none rounded-2xl py-3 text-md font-semibold mt-6 cursor-pointer hover:bg-blue-600 transition-colors" onClick={() => {
+          if (!isConnected) {
+            openConnectModal?.();
+          }
+        }}>
+          {isConnected ? isWrapping ? "Wrap" : "Unwrap" : "Connect Wallet"}
         </button>
       </div>
     </div>
