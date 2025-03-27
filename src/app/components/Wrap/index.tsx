@@ -7,14 +7,30 @@ import Image from "next/image";
 import { Assets } from "@/app/types";
 import { useAccount } from 'wagmi';
 import { useConnectModal } from '@rainbow-me/rainbowkit';
+import { useWeth } from '@/app/hooks/useWeth';
 
 const Wrap: React.FC = () => {
   const { [Assets.ETH]: eth, [Assets.WETH]: weth } = ASSETS;
-
   const [amount, setAmount] = useState<string>('');
   const [isWrapping, setIsWrapping] = useState<boolean>(true);
+
   const { isConnected } = useAccount();
   const { openConnectModal } = useConnectModal();
+  const { wrapEth, unwrapWeth, isLoading, wethBalance, ethBalance } = useWeth();
+
+
+  const handleAction = async () => {
+    if (!isConnected) {
+      openConnectModal?.();
+      return;
+    }
+    if (!amount) return;
+    if (isWrapping) {
+      await wrapEth(amount);
+    } else {
+      await unwrapWeth(amount);
+    }
+  };
 
   return (
     <div className="flex justify-center items-center h-full">
@@ -29,6 +45,7 @@ const Wrap: React.FC = () => {
             amount={amount}
             onAmountChange={setAmount}
             showMax={true}
+            balance={isWrapping ? ethBalance : wethBalance}
           />
 
           <button onClick={() => setIsWrapping(!isWrapping)} className="bg-neutral-900 border-2 border-neutral-800 text-neutral-50 w-10 h-10 rounded-xl mx-auto cursor-pointer flex items-center justify-center hover:bg-neutral-700 transition-colors -my-5 z-10 group">
@@ -39,15 +56,16 @@ const Wrap: React.FC = () => {
             token={isWrapping ? weth : eth}
             amount={amount}
             onAmountChange={setAmount}
+            balance={isWrapping ? wethBalance : ethBalance}
           />
         </div>
 
-        <button className="w-full bg-blue-500 text-white border-none rounded-2xl py-3 text-md font-semibold mt-6 cursor-pointer hover:bg-blue-600 transition-colors" onClick={() => {
-          if (!isConnected) {
-            openConnectModal?.();
-          }
-        }}>
-          {isConnected ? isWrapping ? "Wrap" : "Unwrap" : "Connect Wallet"}
+        <button 
+          className="w-full bg-blue-500 text-white border-none rounded-2xl py-3 text-md font-semibold mt-6 cursor-pointer hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed" 
+          onClick={handleAction}
+          disabled={isLoading || !amount}
+        >
+          {isConnected ? (isLoading ? 'Processing...' : (isWrapping ? "Wrap" : "Unwrap")) : "Connect Wallet"}
         </button>
       </div>
     </div>

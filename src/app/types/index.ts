@@ -1,5 +1,3 @@
-
-  
 export enum Assets {
     ETH = "ETH",
     WETH = "WETH"
@@ -10,11 +8,17 @@ export enum Networks {
   }
   
 export interface NetworkContract {
-    WETH: string;
+    WETH: `0x${string}`;
 }
 
 export interface Token {
-    symbol: string;
-    name: string;
     logoURI: string;
+    name: string;
+    symbol: string;
 }
+
+export type WethContract = {
+    deposit: (value: bigint) => Promise<void>;
+    withdraw: (amount: bigint) => Promise<void>;
+    balanceOf: (address: `0x${string}`) => Promise<bigint>;
+};
