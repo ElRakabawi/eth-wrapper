@@ -1,16 +1,17 @@
 import { useCallback, useState } from 'react';
-import { useAccount, useWriteContract, useReadContract, useWatchContractEvent, useBalance } from 'wagmi';
-import { parseEther, formatEther } from 'viem';
 import { toast } from 'sonner';
+import { useAccount, useReadContract, useBalance, useWriteContract } from 'wagmi';
+import { parseEther, formatEther } from 'viem';
+import { waitForTransactionReceipt } from 'wagmi/actions';
 import { WETH_ABI } from '../abi/weth';
-import { NETWORKS } from '../constants';
+import { NETWORKS, SEPOLIA_SCAN_URL } from '../constants';
 import { Networks } from '../types';
+import { wagmiConfig } from '../components/Web3Providers';
 
 export const useWeth = () => {
   const { address } = useAccount();
+  const { writeContractAsync } = useWriteContract();
   const [isLoading, setIsLoading] = useState(false);
-
-  // Contract address from constants
   const wethAddress = NETWORKS[Networks.SEPOLIA].WETH;
 
   // Read WETH balance
@@ -26,22 +27,6 @@ export const useWeth = () => {
     address: address as `0x${string}`,
   });
 
-  // Write contract functions
-  const { writeContract } = useWriteContract();
-
-  // Watch for Withdrawal events
-  useWatchContractEvent({
-    address: wethAddress,
-    abi: WETH_ABI,
-    eventName: 'Withdrawal',
-    onLogs: () => {
-      toast.success('Successfully unwrapped WETH to ETH');
-      setIsLoading(false);
-      refetchWethBalance();
-      refetchEthBalance();
-    },
-  });
-
   const wrapEth = useCallback(async (amount: string) => {
     if (!address) {
       toast.error('Please connect your wallet');
@@ -51,17 +36,35 @@ export const useWeth = () => {
     try {
       setIsLoading(true);
       const parsedAmount = parseEther(amount);
-      await writeContract({
+      const wrapTxHash = await writeContractAsync({
         abi: WETH_ABI,
         functionName: 'deposit',
         address: wethAddress,
         value: parsedAmount,
       });
+      
+      const receipt = await waitForTransactionReceipt(wagmiConfig, {
+        hash: wrapTxHash,
+      });
+      
+      if (receipt.status === 'success') {
+        refetchWethBalance();
+        refetchEthBalance();
+        toast.success('ETH wrapped successfully', {
+          action: {
+            label: 'View on Etherscan',
+            onClick: () => window.open(`${SEPOLIA_SCAN_URL}/tx/${wrapTxHash}`, '_blank'),
+          },
+        });
+      } else {
+        toast.error('ETH wrapped failed');
+      }
     } catch (error) {
       toast.error(`Failed to wrap ETH: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    } finally {
       setIsLoading(false);
     }
-  }, [address, writeContract, wethAddress]);
+  }, [address, wethAddress, refetchWethBalance, refetchEthBalance, writeContractAsync]);
 
   const unwrapWeth = useCallback(async (amount: string) => {
     if (!address) {
@@ -72,17 +75,35 @@ export const useWeth = () => {
     try {
       setIsLoading(true);
       const parsedAmount = parseEther(amount);
-      await writeContract({
+      const unwrapTxHash = await writeContractAsync({
         abi: WETH_ABI,
         functionName: 'withdraw',
         address: wethAddress,
         args: [parsedAmount],
       });
+      
+      const receipt = await waitForTransactionReceipt(wagmiConfig, {
+        hash: unwrapTxHash,
+      });
+
+      if (receipt.status === 'success') {
+        refetchWethBalance();
+        refetchEthBalance();
+        toast.success('WETH unwrapped successfully', {
+          action: {
+            label: 'View on Etherscan',
+            onClick: () => window.open(`${SEPOLIA_SCAN_URL}/${unwrapTxHash}`, '_blank'),
+          },
+        });
+      } else {
+        toast.error('WETH unwrapped failed');
+      }
     } catch (error) {
       toast.error(`Failed to unwrap WETH: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    } finally {
       setIsLoading(false);
     }
-  }, [address, writeContract, wethAddress]);
+  }, [address, wethAddress, refetchWethBalance, refetchEthBalance, writeContractAsync]);
 
   return {
     wrapEth,

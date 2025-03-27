@@ -14,7 +14,7 @@ const { connectors } = getDefaultWallets({
 });
 
 
-const wagmiConfig = createConfig({
+export const wagmiConfig = createConfig({
   chains: [sepolia],
   transports: {
     [sepolia.id]: sepoliaTransport,

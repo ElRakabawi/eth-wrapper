@@ -38,7 +38,17 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           {children}
         </main>
         </Web3Providers>
-        <Toaster />
+        <Toaster
+          toastOptions={{
+            style: {
+              background: '#171717',
+              color: '#fff',
+              border: '2px solid #272727',
+              borderRadius: '10px',
+              fontFamily: 'var(--font-geist-mono)',
+            },
+          }}
+        />
       </body>
     </html>
   );

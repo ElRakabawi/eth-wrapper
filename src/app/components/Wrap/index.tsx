@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { ASSETS } from "@/app/constants";
 import TokenInput from "../TokenInput";
 import Image from "next/image";
@@ -18,7 +18,6 @@ const Wrap: React.FC = () => {
   const { openConnectModal } = useConnectModal();
   const { wrapEth, unwrapWeth, isLoading, wethBalance, ethBalance } = useWeth();
 
-
   const handleAction = async () => {
     if (!isConnected) {
       openConnectModal?.();
@@ -32,8 +31,19 @@ const Wrap: React.FC = () => {
     }
   };
 
+
+  const buttonText = useMemo(() => {
+    if (isLoading) {
+      if (isWrapping) return 'Wrapping...';
+      return 'Unwrapping...';
+    } else {
+      if (isWrapping) return 'Wrap';
+      return 'Unwrap';
+    }
+  }, [isLoading, isWrapping]);
+
   return (
-    <div className="flex justify-center items-center h-full">
+    <div className="flex justify-center items-center h-full px-4">
       <div className="bg-neutral-800 rounded-3xl p-6 w-full max-w-[480px] shadow-lg">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-neutral-50 text-lg font-semibold m-0">{isWrapping ? "Wrap ETH" : "Unwrap WETH"}</h2>
@@ -65,7 +75,7 @@ const Wrap: React.FC = () => {
           onClick={handleAction}
           disabled={isLoading || !amount}
         >
-          {isConnected ? (isLoading ? 'Processing...' : (isWrapping ? "Wrap" : "Unwrap")) : "Connect Wallet"}
+          {isConnected ? buttonText : "Connect Wallet"}
         </button>
       </div>
     </div>
