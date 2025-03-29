@@ -1,36 +1,76 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# ETH Wrapper
 
-## Getting Started
+A modern web application for wrapping ETH to WETH and vice versa, with built-in support for Safe (formerly Gnosis Safe) multi-signature transactions.
 
-First, run the development server:
+Deployed at [https://eth-wrapper-livid.vercel.app](https://eth-wrapper-livid.vercel.app)
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+![Interface](/public/interface.png)
+
+### Key Features
+- ETH to WETH wrapping/unwrapping
+- Real-time transaction status tracking
+- Multi-signature transaction support via Safe
+
+## Design Decisions
+
+### Safe Integration
+- Implemented `SafeTxTracker` component for monitoring multi-signature transactions
+- Uses HTTP polling (1-second interval) to track transaction status [Not optimal, couldn't find alterantives]
+- SWCs transaction execution status is tracked by diffing pending and executed transactions for the latest pending safe transaction using it's `SafeTxHash`. 
+- Supports one pending transaction only (shows the last pending txn)
+
+### Transaction Flow
+1. User initiates wrap/unwrap action
+2. For Safe transactions:
+   - Transaction is queued for multi-signature approval
+   - Progress is tracked via `SafeTxTracker`
+   - Success notification with Etherscan link on completion
+3. For regular transactions:
+   - Direct execution with immediate feedback
+   - Balance updates on completion
+
+## Dependencies
+
+```json
+{
+  "dependencies": {
+    "@rainbow-me/rainbowkit": "^2.2.4",
+    "@safe-global/safe-react-hooks": "^0.2.0",
+    "@tanstack/react-query": "^5.69.0",
+    "next": "15.2.4",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "sonner": "^1.4.0",
+    "viem": "^2.23.15",
+    "wagmi": "^2.14.15"
+  }
+}
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Development
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+# Install dependencies
+npm install
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+# Run development server
+npm run dev
 
-## Learn More
+# Build for production
+npm run build
 
-To learn more about Next.js, take a look at the following resources:
+# Start production server
+npm start
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Environment Variables
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Required environment variables:
+- `NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID`: WalletConnect project ID for wallet connections
 
-## Deploy on Vercel
+## Network Support
+Currently deployed on Sepolia testnet with the following contracts:
+- WETH: `0xfFf9976782d46CC05630D1f6eBAb18b2324d6B14`
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## License
+MIT
