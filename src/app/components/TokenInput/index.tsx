@@ -36,7 +36,7 @@ const TokenInput: React.FC<TokenInputProps> = ({ token, amount, onAmountChange, 
           <span>{token.symbol}</span>
         </div>
         <div onClick={() => showMax && onAmountChange(formattedBalance.replace(/,/g, ''))} className={`flex items-center text-sm gap-2 text-neutral-500 whitespace-nowrap font-[family-name:var(--font-geist-mono)] ${showMax ? 'cursor-pointer hover:text-white transition-all duration-300 active:scale-95 active:text-neutral-400' : ''}`}>
-          {formattedBalance} {token.symbol}
+          {`${formattedBalance} ${token.symbol}`}
         </div>
       </div>
     </div>

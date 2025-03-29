@@ -1,6 +1,19 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  webpack: (config) => {
+    config.externals.push("pino-pretty", "lokijs", "encoding");
+    return config;
+  },
+  experimental: {
+    turbo: {
+      resolveAlias: {
+        'pino-pretty': 'pino-pretty',
+        'lokijs': 'lokijs',
+        'encoding': 'encoding'
+        }
+    }
+  },
   async headers() {
     return [
       {

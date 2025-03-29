@@ -63,6 +63,25 @@ npm run build
 npm start
 ```
 
+## Testing
+
+Simple tests for `TokenInput` and `Wrap` components can be found under `__tests__` and are done using Vitest and React Testing Library.
+
+### TokenInput Component
+- Token information rendering
+- Input value change handling
+- Balance display & Max amount functionality
+
+### Wrap Interface
+- Basic component rendering
+- Wrap/Unwrap mode switching
+- Action button state
+
+Run tests with:
+```bash
+npm test
+```
+
 ## Environment Variables
 
 Required environment variables:
@@ -70,7 +89,7 @@ Required environment variables:
 
 ## Network Support
 Currently deployed on Sepolia testnet with the following contracts:
-- WETH: `0xfFf9976782d46CC05630D1f6eBAb18b2324d6B14`
+- WETH: `0xfFf9976782d46CC05630D1f6eBAb18b2324d6B14` (there's multiple WETH addreses on Sepolia, I choosed the whitelisted one on Uniswap)
 
 ## License
 MIT
