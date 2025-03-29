@@ -5,6 +5,8 @@ import { WagmiProvider, createConfig, http } from 'wagmi';
 import { QueryClientProvider, QueryClient } from "@tanstack/react-query";
 import { sepolia } from 'wagmi/chains';
 import { safe } from 'wagmi/connectors';
+import { SafeProvider, createConfig as createSafeConfig } from '@safe-global/safe-react-hooks';
+import { ethAddress } from 'viem';
 
 const queryClient = new QueryClient();
 const sepoliaTransport = http('https://gateway.tenderly.co/public/sepolia');
@@ -26,21 +28,34 @@ export const wagmiConfig = createConfig({
     }),
     ...connectors,
   ],
-  ssr: true,
 });
+
+// initial config: will be replaced with SWC Safe address in the hooks
+const safeConfig = createSafeConfig({
+  chain: sepolia,
+  signer: ethAddress,
+  provider: sepolia.rpcUrls.default.http[0],
+  // dummy new safe options to avoid client initialization error
+  safeOptions: {
+    owners: [ethAddress],
+    threshold: 1,
+  }
+});
+
 
 export default function Web3Providers({ children }: { children: React.ReactNode }) {
   return (
-    <WagmiProvider config={wagmiConfig}>
-      <QueryClientProvider client={queryClient}>
-        <RainbowKitProvider 
-          theme={darkTheme()} 
-          modalSize="wide"
-          initialChain={sepolia}
-        >
-          {children}
-        </RainbowKitProvider>
-      </QueryClientProvider>
-    </WagmiProvider>
+      <SafeProvider config={safeConfig}>
+        <WagmiProvider config={wagmiConfig}>
+          <QueryClientProvider client={queryClient}>
+              <RainbowKitProvider 
+                theme={darkTheme()} 
+                initialChain={sepolia}
+              >
+                {children}
+              </RainbowKitProvider>
+          </QueryClientProvider>
+        </WagmiProvider>
+      </SafeProvider>
   );
 } 

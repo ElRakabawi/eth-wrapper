@@ -8,13 +8,15 @@ import { Assets } from "@/app/types";
 import { useAccount } from 'wagmi';
 import { useConnectModal } from '@rainbow-me/rainbowkit';
 import { useWeth } from '@/app/hooks/useWeth';
+import useIsSafe from '@/app/hooks/useIsSafe';
+import SafeTxTracker from '@/app/components/SafeTxTracker';
 
 const Wrap: React.FC = () => {
   const { [Assets.ETH]: eth, [Assets.WETH]: weth } = ASSETS;
   const [amount, setAmount] = useState<string>('');
   const [isWrapping, setIsWrapping] = useState<boolean>(true);
-
   const { isConnected } = useAccount();
+  const { isSafe } = useIsSafe();
   const { openConnectModal } = useConnectModal();
   const { wrapEth, unwrapWeth, isLoading, wethBalance, ethBalance } = useWeth();
 
@@ -30,7 +32,6 @@ const Wrap: React.FC = () => {
       await unwrapWeth(amount);
     }
   };
-
 
   const buttonText = useMemo(() => {
     if (isLoading) {
@@ -77,6 +78,8 @@ const Wrap: React.FC = () => {
         >
           {isConnected ? buttonText : "Connect Wallet"}
         </button>
+
+        {isSafe && <SafeTxTracker />}
       </div>
     </div>
   );
