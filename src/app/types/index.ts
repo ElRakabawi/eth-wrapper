@@ -22,3 +22,11 @@ export type WethContract = {
     withdraw: (amount: bigint) => Promise<void>;
     balanceOf: (address: `0x${string}`) => Promise<bigint>;
 };
+
+export interface SafeTransactionResponse {
+    safeTxHash: string;
+    transactionHash?: string;
+    origin?: string;
+    confirmations?: Array<{ owner: string; signature: string }>;
+    confirmationsRequired: number;
+}

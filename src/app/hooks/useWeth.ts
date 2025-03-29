@@ -92,7 +92,7 @@ export const useWeth = () => {
         toast.success('WETH unwrapped successfully', {
           action: {
             label: 'View on Etherscan',
-            onClick: () => window.open(`${SEPOLIA_SCAN_URL}/${unwrapTxHash}`, '_blank'),
+            onClick: () => window.open(`${SEPOLIA_SCAN_URL}/tx/${unwrapTxHash}`, '_blank'),
           },
         });
       } else {

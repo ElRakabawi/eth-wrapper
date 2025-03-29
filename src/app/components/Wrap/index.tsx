@@ -15,6 +15,7 @@ const Wrap: React.FC = () => {
   const { [Assets.ETH]: eth, [Assets.WETH]: weth } = ASSETS;
   const [amount, setAmount] = useState<string>('');
   const [isWrapping, setIsWrapping] = useState<boolean>(true);
+  const [hasPendingSafeTx, setHasPendingSafeTx] = useState<boolean>(false);
   const { isConnected } = useAccount();
   const { isSafe } = useIsSafe();
   const { openConnectModal } = useConnectModal();
@@ -34,14 +35,13 @@ const Wrap: React.FC = () => {
   };
 
   const buttonText = useMemo(() => {
-    if (isLoading) {
-      if (isWrapping) return 'Wrapping...';
-      return 'Unwrapping...';
+    if (isLoading && !isSafe) {
+      return isWrapping ? 'Wrapping...' : 'Unwrapping...';
     } else {
-      if (isWrapping) return 'Wrap';
-      return 'Unwrap';
+      if(hasPendingSafeTx) return 'Safe Transaction Pending...';
+      return isWrapping ? 'Wrap' : 'Unwrap';
     }
-  }, [isLoading, isWrapping]);
+  }, [isLoading, isWrapping, isSafe, hasPendingSafeTx]);
 
   return (
     <div className="flex justify-center items-center h-full px-4">
@@ -74,12 +74,12 @@ const Wrap: React.FC = () => {
         <button 
           className="w-full bg-blue-500 text-white border-none rounded-2xl py-3 text-md font-semibold mt-6 cursor-pointer hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed" 
           onClick={handleAction}
-          disabled={isLoading || !amount}
+          disabled={(!isSafe && isLoading) || !amount || (isSafe && hasPendingSafeTx)}
         >
           {isConnected ? buttonText : "Connect Wallet"}
         </button>
 
-        {isSafe && <SafeTxTracker />}
+        {isSafe && <SafeTxTracker onPendingTxChange={setHasPendingSafeTx} />}
       </div>
     </div>
   );
