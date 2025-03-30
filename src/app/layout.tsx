@@ -5,6 +5,8 @@ import { Geist, Geist_Mono } from "next/font/google";
 import Web3Providers from "./components/Web3Providers";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { Toaster } from 'sonner';
+import AnimatedBlob from "./components/AnimatedBlob";
+import { BlobProvider } from "./contexts/BlobContext";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -28,15 +30,20 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <title>Eth Wrapper</title>
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-transparent`}
       >
         <Web3Providers>
-        <main className="flex flex-col h-screen bg-neutral-900">
-          <div className="flex justify-end bg-neutral-900 p-5">
-            <ConnectButton />
-          </div>
-          {children}
-        </main>
+          <BlobProvider>
+            <div className="fixed inset-0 -z-10">
+              <AnimatedBlob />
+            </div>
+            <main className="flex flex-col h-screen bg-transparent">
+              <div className="flex justify-end bg-transparent p-5">
+                <ConnectButton />
+              </div>
+              {children}
+            </main>
+          </BlobProvider>
         </Web3Providers>
         <Toaster
           toastOptions={{

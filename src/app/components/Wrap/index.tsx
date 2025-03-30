@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { ASSETS } from "@/app/constants";
 import TokenInput from "../TokenInput";
 import Image from "next/image";
@@ -10,6 +10,7 @@ import { useConnectModal } from '@rainbow-me/rainbowkit';
 import { useWeth } from '@/app/hooks/useWeth';
 import useIsSafe from '@/app/hooks/useIsSafe';
 import SafeTxTracker from '@/app/components/SafeTxTracker';
+import { useBlob } from '@/app/contexts/BlobContext';
 
 const Wrap: React.FC = () => {
   const { [Assets.ETH]: eth, [Assets.WETH]: weth } = ASSETS;
@@ -20,6 +21,7 @@ const Wrap: React.FC = () => {
   const { isSafe } = useIsSafe();
   const { openConnectModal } = useConnectModal();
   const { wrapEth, unwrapWeth, isLoading, wethBalance, ethBalance } = useWeth();
+  const { setBlobState } = useBlob();
 
   const handleAction = async () => {
     if (!isConnected) {
@@ -27,12 +29,25 @@ const Wrap: React.FC = () => {
       return;
     }
     if (!amount) return;
+    setBlobState({ isTransactionComplete: false });
     if (isWrapping) {
       await wrapEth(amount);
     } else {
       await unwrapWeth(amount);
     }
+    setBlobState({ isTransactionComplete: true });
+    setTimeout(() => {
+      setBlobState({ isTransactionComplete: false });
+    }, 1000);
   };
+
+  // Update blob state
+  useEffect(() => {
+    setBlobState({ 
+      isPending: isLoading || hasPendingSafeTx,
+      isSafe 
+    });
+  }, [isLoading, hasPendingSafeTx, isSafe, setBlobState]);
 
   const buttonText = useMemo(() => {
     if (isLoading && !isSafe) {
@@ -44,8 +59,8 @@ const Wrap: React.FC = () => {
   }, [isLoading, isWrapping, isSafe, hasPendingSafeTx]);
 
   return (
-    <div className="flex justify-center items-center h-full px-4">
-      <div className="bg-neutral-800 rounded-3xl p-6 w-full max-w-[480px] shadow-lg">
+    <div className="flex justify-center items-center h-full px-4 relative bg-transparent">
+      <div className="bg-neutral-800 backdrop-blur-md rounded-3xl p-6 w-full max-w-[480px] shadow-lg relative z-10">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-neutral-50 text-lg font-semibold m-0">{isWrapping ? "Wrap ETH" : "Unwrap WETH"}</h2>
         </div>
