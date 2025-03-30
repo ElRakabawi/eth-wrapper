@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useEffect, useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useSafe, createConfig } from '@safe-global/safe-react-hooks';
 import { sepolia } from 'wagmi/chains';
 import { useAccount } from 'wagmi';
@@ -17,6 +17,7 @@ interface SafeTxTrackerProps {
 
 const SafeTxTracker: React.FC<SafeTxTrackerProps> = ({ onPendingTxChange }) => {
   const { address } = useAccount();
+  const [isLoadingPendingTxs, setIsLoadingPendingTxs] = useState(true);
   const config = useMemo(() => createConfig({
     chain: sepolia,
     safeAddress: address,
@@ -25,7 +26,7 @@ const SafeTxTracker: React.FC<SafeTxTrackerProps> = ({ onPendingTxChange }) => {
   }), [address]);
   
   const { getPendingTransactions, getTransactions } = useSafe();
-  const { data: pendingTxs, refetch: refetchPendingTxs, isLoading: isLoadingPending} = getPendingTransactions({ config });
+  const { data: pendingTxs, refetch: refetchPendingTxs, isFetchedAfterMount } = getPendingTransactions({ config });
   const { data: transactions, refetch: refetchTransactions } = getTransactions({ config });
   // last safe pending transaction that is orignated from EthWrapper
   const pendingTx = pendingTxs?.find(tx => {
@@ -38,6 +39,12 @@ const SafeTxTracker: React.FC<SafeTxTrackerProps> = ({ onPendingTxChange }) => {
   useEffect(() => {
     onPendingTxChange?.(!!pendingTx);
   }, [pendingTx, onPendingTxChange]);
+
+  useEffect(() => {
+    if (isFetchedAfterMount) {
+      setIsLoadingPendingTxs(false);
+    }
+  }, [isFetchedAfterMount]);
 
   // save the last pending transaction hash to local storage
   useEffect(() => {
@@ -82,14 +89,14 @@ const SafeTxTracker: React.FC<SafeTxTrackerProps> = ({ onPendingTxChange }) => {
     return () => clearInterval(interval);
   }, [refetchPendingTxs, refetchTransactions]);
 
-  if (isLoadingPending) {
+  if (isLoadingPendingTxs && !pendingTx) {
     return (
       <div className="bg-neutral-800 rounded-xl p-4 mt-4 font-[family-name:var(--font-geist-mono)] tracking-tighter">
         <div className="flex justify-between items-center">
           <div className="text-[#12ff80] font-medium text-sm">Multi-signature Status</div>
           <div className="flex items-center gap-2">
             <div className="animate-spin h-3 w-3 border-[1.5px] border-neutral-400 border-t-transparent rounded-full"></div>
-            <span className="text-neutral-400 text-xs">Loading Transactions..</span>
+            <span className="text-neutral-400 text-xs">Fetching signatures..</span>
           </div>
         </div>
         <div className="flex items-center gap-2">
